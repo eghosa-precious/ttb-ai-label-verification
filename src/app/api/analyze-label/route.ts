@@ -51,7 +51,9 @@ const cleaned = content
   .replace(/```/g, "")
   .trim();
 
-return NextResponse.json(JSON.parse(cleaned));
+return NextResponse.json({
+  result: cleaned,
+});
   } catch (error) {
     console.error(error);
     return NextResponse.json(
