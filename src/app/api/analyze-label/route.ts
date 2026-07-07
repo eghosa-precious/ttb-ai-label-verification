@@ -51,8 +51,25 @@ const cleaned = content
   .replace(/```/g, "")
   .trim();
 
+let parsed;
+
+try {
+  parsed = JSON.parse(cleaned);
+} catch {
+  parsed = {
+    status: "WARNING",
+    brandName: "Needs human review",
+    productType: "Needs human review",
+    alcoholContent: "Needs human review",
+    governmentWarning: "Needs human review",
+    healthOrMisleadingClaims: "Needs human review",
+    missingItems: ["AI response could not be formatted"],
+    recommendation: cleaned,
+  };
+}
+
 return NextResponse.json({
-  result: cleaned,
+  result: JSON.stringify(parsed),
 });
   } catch (error) {
     console.error(error);
