@@ -66,7 +66,7 @@ export default function Home() {
       setResult({
         status: "FAIL",
         recommendation:
-          "Analysis failed or the AI response could not be formatted. Try another image.",
+          Human compliance review recommended because some label details could not be confidently verified.
       });
     } finally {
       setLoading(false);
