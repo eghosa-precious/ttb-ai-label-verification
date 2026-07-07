@@ -44,9 +44,14 @@ export async function POST(request: Request) {
       ],
     });
 
-    return NextResponse.json({
-      result: response.choices[0].message.content,
-    });
+    const content = response.choices[0].message.content || "{}";
+
+const cleaned = content
+  .replace(/```json/g, "")
+  .replace(/```/g, "")
+  .trim();
+
+return NextResponse.json(JSON.parse(cleaned));
   } catch (error) {
     console.error(error);
     return NextResponse.json(
