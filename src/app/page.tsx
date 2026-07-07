@@ -65,8 +65,9 @@ export default function Home() {
     } catch {
       setResult({
         status: "FAIL",
-        recommendation:
-          Human compliance review recommended because some label details could not be confidently verified.
+        
+          recommendation:
+  "Human compliance review recommended because some label details could not be confidently verified.",
       });
     } finally {
       setLoading(false);
