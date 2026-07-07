@@ -10,18 +10,22 @@ export async function POST(request: Request) {
     const { image } = await request.json();
 
     if (!image) {
-      return NextResponse.json({ error: "No image provided." }, { status: 400 });
+      return NextResponse.json(
+        { error: "No image provided." },
+        { status: 400 }
+      );
     }
 
     const response = await openai.chat.completions.create({
       model: "gpt-4o-mini",
+      response_format: { type: "json_object" },
       messages: [
         {
           role: "user",
           content: [
             {
               type: "text",
-              text: `Analyze this alcohol label for compliance. Return only valid JSON with:
+              text: `Analyze this alcohol label for compliance. Return ONLY valid JSON with this exact structure:
 {
   "status": "PASS, WARNING, or FAIL",
   "brandName": "",
@@ -31,7 +35,9 @@ export async function POST(request: Request) {
   "healthOrMisleadingClaims": "",
   "missingItems": [],
   "recommendation": ""
-}`,
+}
+
+If something is not clearly visible, write "Needs human review".`,
             },
             {
               type: "image_url",
@@ -45,37 +51,26 @@ export async function POST(request: Request) {
     });
 
     const content = response.choices[0].message.content || "{}";
+    const parsed = JSON.parse(content);
 
-const cleaned = content
-  .replace(/```json/g, "")
-  .replace(/```/g, "")
-  .trim();
-
-let parsed;
-
-try {
-  parsed = JSON.parse(cleaned);
-} catch {
-  parsed = {
-    status: "WARNING",
-    brandName: "Needs human review",
-    productType: "Needs human review",
-    alcoholContent: "Needs human review",
-    governmentWarning: "Needs human review",
-    healthOrMisleadingClaims: "Needs human review",
-    missingItems: ["AI response could not be formatted"],
-    recommendation: cleaned,
-  };
-}
-
-return NextResponse.json({
-  result: JSON.stringify(parsed),
-});
+    return NextResponse.json({
+      result: JSON.stringify(parsed),
+    });
   } catch (error) {
     console.error(error);
-    return NextResponse.json(
-      { error: "Analysis failed. Check your API key and server logs." },
-      { status: 500 }
-    );
+
+    return NextResponse.json({
+      result: JSON.stringify({
+        status: "WARNING",
+        brandName: "Needs human review",
+        productType: "Needs human review",
+        alcoholContent: "Needs human review",
+        governmentWarning: "Needs human review",
+        healthOrMisleadingClaims: "Needs human review",
+        missingItems: ["AI analysis could not be completed"],
+        recommendation:
+          "Human compliance review recommended because some label details could not be confidently verified.",
+      }),
+    });
   }
 }
